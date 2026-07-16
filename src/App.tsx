@@ -35,8 +35,8 @@ export default function App() {
   } | null>(null);
 
   // Fetch all data from DB
-  const loadAllData = async () => {
-    setIsLoading(true);
+  const loadAllData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const [clsList, mList, sList, cList, aPass] = await Promise.all([
         dbService.getClasses(),
@@ -54,7 +54,7 @@ export default function App() {
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -66,32 +66,32 @@ export default function App() {
 
   const handleSaveStudent = async (student: Student) => {
     await dbService.saveStudent(student);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleDeleteStudent = async (id: string) => {
     await dbService.deleteStudent(id);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleSaveClass = async (classData: Class) => {
     await dbService.saveClass(classData);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleDeleteClass = async (id: string) => {
     await dbService.deleteClass(id);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleSaveMusyrif = async (musyrif: Musyrif) => {
     await dbService.saveMusyrif(musyrif);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleDeleteMusyrif = async (id: string) => {
     await dbService.deleteMusyrif(id);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleUpdateAdminPassword = async (newPass: string) => {
@@ -101,7 +101,7 @@ export default function App() {
 
   const handleSaveCapaian = async (capaian: Capaian) => {
     await dbService.saveCapaian(capaian);
-    await loadAllData();
+    await loadAllData(true);
   };
 
   const handleUpdateMusyrifPassword = async (musyrifId: string, newPass: string) => {
@@ -109,7 +109,7 @@ export default function App() {
     if (found) {
       const updated = { ...found, passwordHash: newPass };
       await dbService.saveMusyrif(updated);
-      await loadAllData();
+      await loadAllData(true);
       // Update session musyrif details
       setCurrentMusyrif(updated);
     }
