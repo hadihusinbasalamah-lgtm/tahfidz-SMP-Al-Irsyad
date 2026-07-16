@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Student, Class, Musyrif, Capaian } from "../types";
 import {
   Users,
@@ -20,6 +20,7 @@ import {
   Lock,
   Printer,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   Info,
   Upload
@@ -72,6 +73,11 @@ export default function AdminPanel({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterClass, setFilterClass] = useState("");
   const [filterMusyrif, setFilterMusyrif] = useState("");
+  const [studentPage, setStudentPage] = useState(1);
+
+  useEffect(() => {
+    setStudentPage(1);
+  }, [searchQuery, filterClass, filterMusyrif]);
 
   // Report filters state
   const [reportFilterClass, setReportFilterClass] = useState("");
@@ -254,6 +260,17 @@ export default function AdminPanel({
     const matchMusyrif = filterMusyrif ? s.musyrifId === filterMusyrif : true;
     return matchSearch && matchClass && matchMusyrif;
   });
+
+  const ITEMS_PER_PAGE = 20;
+  const totalStudentsCount = filteredStudentsList.length;
+  const totalStudentPages = Math.ceil(totalStudentsCount / ITEMS_PER_PAGE) || 1;
+  const safeStudentPage = Math.min(Math.max(1, studentPage), totalStudentPages);
+  const paginatedStudentsList = filteredStudentsList.slice(
+    (safeStudentPage - 1) * ITEMS_PER_PAGE,
+    safeStudentPage * ITEMS_PER_PAGE
+  );
+  const startIdx = totalStudentsCount === 0 ? 0 : (safeStudentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endIdx = Math.min(safeStudentPage * ITEMS_PER_PAGE, totalStudentsCount);
 
   const filteredCapaiansReport = capaians.filter((c) => {
     const matchClass = reportFilterClass ? c.kelasId === reportFilterClass : true;
@@ -588,14 +605,14 @@ export default function AdminPanel({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredStudentsList.length === 0 ? (
+                      {paginatedStudentsList.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-10 px-6 text-center text-slate-400 italic">
                             Tidak ada data siswa yang cocok dengan kriteria pencarian.
                           </td>
                         </tr>
                       ) : (
-                        filteredStudentsList.map((s) => (
+                        paginatedStudentsList.map((s) => (
                           <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
                             <td className="py-3.5 px-6 font-mono font-bold text-slate-700">{s.noInduk}</td>
                             <td className="py-3.5 px-6 font-semibold text-slate-900">{s.nama}</td>
@@ -630,9 +647,78 @@ export default function AdminPanel({
                   </table>
                 </div>
 
-                <div className="p-4 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400 flex items-center gap-2">
-                  <Info className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Menampilkan {filteredStudentsList.length} dari total {students.length} siswa tahfidz terdaftar.</span>
+                {/* Pagination Controls */}
+                <div className="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                    <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>
+                      Menampilkan <strong>{startIdx} - {endIdx}</strong> dari total <strong>{totalStudentsCount}</strong> siswa terfilter (Total {students.length} siswa).
+                    </span>
+                  </div>
+
+                  {totalStudentPages > 1 && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setStudentPage(1)}
+                        disabled={safeStudentPage === 1}
+                        className="px-2 py-1 rounded border border-slate-200 text-[11px] bg-white text-slate-600 font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        title="Halaman Pertama"
+                      >
+                        Awal
+                      </button>
+                      <button
+                        onClick={() => setStudentPage((prev) => Math.max(1, prev - 1))}
+                        disabled={safeStudentPage === 1}
+                        className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        title="Halaman Sebelumnya"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Render numbered buttons with smart ellipses */}
+                      {Array.from({ length: totalStudentPages }, (_, i) => i + 1)
+                        .filter((p) => {
+                          return p === 1 || p === totalStudentPages || Math.abs(p - safeStudentPage) <= 1;
+                        })
+                        .map((p, idx, arr) => {
+                          const prevPage = arr[idx - 1];
+                          const showEllipsis = prevPage && p - prevPage > 1;
+
+                          return (
+                            <React.Fragment key={p}>
+                              {showEllipsis && <span className="px-1 text-xs text-slate-400">...</span>}
+                              <button
+                                onClick={() => setStudentPage(p)}
+                                className={`px-2.5 py-1 rounded text-[11px] font-bold border transition-all ${
+                                  safeStudentPage === p
+                                    ? "bg-brand-700 border-brand-700 text-white shadow-sm"
+                                    : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                                }`}
+                              >
+                                {p}
+                              </button>
+                            </React.Fragment>
+                          );
+                        })}
+
+                      <button
+                        onClick={() => setStudentPage((prev) => Math.min(totalStudentPages, prev + 1))}
+                        disabled={safeStudentPage === totalStudentPages}
+                        className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        title="Halaman Selanjutnya"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setStudentPage(totalStudentPages)}
+                        disabled={safeStudentPage === totalStudentPages}
+                        className="px-2 py-1 rounded border border-slate-200 text-[11px] bg-white text-slate-600 font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        title="Halaman Terakhir"
+                      >
+                        Akhir
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1168,6 +1254,11 @@ export default function AdminPanel({
               </div>
             </div>
           )}
+
+          {/* Copyright Footer */}
+          <div className="pt-8 border-t border-slate-200/60 text-center text-[11.5px] text-slate-400 font-medium tracking-wide">
+            Copyright © 2026 HUMAS SMP AL IRSYAD SURAKARTA
+          </div>
         </div>
       </main>
     </div>

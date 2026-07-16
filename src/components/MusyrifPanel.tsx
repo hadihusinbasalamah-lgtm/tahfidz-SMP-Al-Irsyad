@@ -16,7 +16,8 @@ import {
   Info,
   CheckCircle,
   Clock,
-  UserCheck
+  UserCheck,
+  AlertCircle
 } from "lucide-react";
 
 interface MusyrifPanelProps {
@@ -45,6 +46,8 @@ export default function MusyrifPanel({
   const [activeTab, setActiveTab] = useState<TabType>("input");
   const [selectedBulan, setSelectedBulan] = useState("2026-07");
   const [notification, setNotification] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [filterJenjang, setFilterJenjang] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"" | "filled" | "unfilled">("");
 
   // Active student being edited for capaian input
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
@@ -69,6 +72,29 @@ export default function MusyrifPanel({
 
   // Only get students mentored by this Musyrif
   const myStudents = students.filter((s) => s.musyrifId === currentMusyrif.id);
+
+  // Filter students by grade level (Jenjang) and input status (Sudah/Belum)
+  const filteredMyStudents = myStudents.filter((s) => {
+    // 1. Jenjang filter
+    if (filterJenjang && !s.kelasId.startsWith(filterJenjang)) return false;
+
+    // 2. Status filter
+    if (filterStatus) {
+      const isFilled = capaians.some((c) => c.studentId === s.id && c.bulan === selectedBulan);
+      if (filterStatus === "filled" && !isFilled) return false;
+      if (filterStatus === "unfilled" && isFilled) return false;
+    }
+
+    return true;
+  });
+
+  // Get filled vs unfilled stats for the selected month
+  const studentsFilled = myStudents.filter((s) =>
+    capaians.some((c) => c.studentId === s.id && c.bulan === selectedBulan)
+  );
+  const studentsUnfilled = myStudents.filter((s) =>
+    !capaians.some((c) => c.studentId === s.id && c.bulan === selectedBulan)
+  );
 
   // Handle open input/edit form for a student's capaian
   const handleOpenEditCapaian = (student: Student) => {
@@ -413,10 +439,97 @@ export default function MusyrifPanel({
                 </div>
               )}
 
+              {/* Stats summary cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Card Already Filled */}
+                <div
+                  onClick={() => setFilterStatus(filterStatus === "filled" ? "" : "filled")}
+                  className={`border rounded-2xl p-5 shadow-sm flex items-center justify-between cursor-pointer transition-all duration-200 select-none ${
+                    filterStatus === "filled"
+                      ? "bg-emerald-100 border-emerald-400 ring-2 ring-emerald-500/20 scale-[1.01] shadow-md"
+                      : "bg-emerald-50/50 border-emerald-100 hover:bg-emerald-100/30 hover:border-emerald-200"
+                  }`}
+                >
+                  <div>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+                      Sudah Diinput ({formatIndonesianMonth(selectedBulan)})
+                      {filterStatus === "filled" && (
+                        <span className="px-1.5 py-0.5 bg-emerald-600 text-white rounded text-[8px] uppercase tracking-normal">Aktif</span>
+                      )}
+                    </p>
+                    <h4 className="text-2xl font-extrabold text-emerald-950 mt-1">
+                      {studentsFilled.length} <span className="text-xs font-semibold text-emerald-600">dari {myStudents.length} Santri</span>
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-1 font-medium">Klik untuk memfilter daftar santri terisi</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-700 shadow-sm">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                </div>
+
+                {/* Card Unfilled */}
+                <div
+                  onClick={() => setFilterStatus(filterStatus === "unfilled" ? "" : "unfilled")}
+                  className={`border rounded-2xl p-5 shadow-sm flex items-center justify-between cursor-pointer transition-all duration-200 select-none ${
+                    filterStatus === "unfilled"
+                      ? "bg-amber-100 border-amber-400 ring-2 ring-amber-500/20 scale-[1.01] shadow-md"
+                      : "bg-amber-50/50 border-amber-100 hover:bg-amber-100/30 hover:border-amber-200"
+                  }`}
+                >
+                  <div>
+                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                      Belum Diinput ({formatIndonesianMonth(selectedBulan)})
+                      {filterStatus === "unfilled" && (
+                        <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-[8px] uppercase tracking-normal">Aktif</span>
+                      )}
+                    </p>
+                    <h4 className="text-2xl font-extrabold text-amber-950 mt-1">
+                      {studentsUnfilled.length} <span className="text-xs font-semibold text-amber-600">Santri</span>
+                    </h4>
+                    <p className="text-[10px] text-slate-500 mt-1 font-medium">Klik untuk memfilter daftar santri belum diinput</p>
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-amber-100/80 flex items-center justify-center text-amber-700 shadow-sm">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                </div>
+              </div>
+
               {/* Student list mentored */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-100">
-                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Santri Binaan Saya</h3>
+                <div className="p-4 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Daftar Santri Binaan Saya</h3>
+                    {filterStatus && (
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        filterStatus === "filled"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      }`}>
+                        Filter: {filterStatus === "filled" ? "Sudah Diinput" : "Belum Diinput"}
+                        <button
+                          onClick={() => setFilterStatus("")}
+                          className="hover:bg-slate-200 rounded-full w-3.5 h-3.5 inline-flex items-center justify-center font-extrabold transition-colors"
+                          title="Hapus filter"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-500">Filter Jenjang:</span>
+                    <select
+                      value={filterJenjang}
+                      onChange={(e) => setFilterJenjang(e.target.value)}
+                      className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-bold bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      id="m-filter-jenjang"
+                    >
+                      <option value="">Semua Jenjang</option>
+                      <option value="7">Jenjang Kelas 7</option>
+                      <option value="8">Jenjang Kelas 8</option>
+                      <option value="9">Jenjang Kelas 9</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -431,14 +544,16 @@ export default function MusyrifPanel({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {myStudents.length === 0 ? (
+                      {filteredMyStudents.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="py-12 px-6 text-center text-slate-400 italic">
-                            Belum ada siswa yang didelegasikan ke bimbingan Anda oleh Admin.
+                            {myStudents.length === 0
+                              ? "Belum ada siswa yang didelegasikan ke bimbingan Anda oleh Admin."
+                              : "Tidak ada data siswa yang cocok dengan filter Jenjang."}
                           </td>
                         </tr>
                       ) : (
-                        myStudents.map((s) => {
+                        filteredMyStudents.map((s) => {
                           const record = capaians.find((c) => c.studentId === s.id && c.bulan === selectedBulan);
                           return (
                             <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
@@ -586,6 +701,11 @@ export default function MusyrifPanel({
               </div>
             </div>
           )}
+
+          {/* Copyright Footer */}
+          <div className="pt-8 border-t border-slate-200/60 text-center text-[11.5px] text-slate-400 font-medium tracking-wide">
+            Copyright © 2026 HUMAS SMP AL IRSYAD SURAKARTA
+          </div>
         </div>
       </main>
     </div>

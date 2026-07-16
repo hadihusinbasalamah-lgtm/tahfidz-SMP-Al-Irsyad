@@ -192,16 +192,13 @@ export default function LoginScreen({ onLoginSuccess, musyrifs, adminPass, sessi
             </div>
           </form>
 
-          {/* Quick Demo Credentials Help */}
-          <div className="mt-6 pt-5 border-t border-slate-100 text-[11px] text-slate-400 leading-relaxed">
-            <span className="font-semibold text-slate-500">Bantuan Demo:</span>
-            <ul className="list-disc list-inside mt-1 space-y-0.5 font-mono">
-              <li>Admin: admin / admin</li>
-              <li>Musyrif 1: ahmad / ahmad123</li>
-              <li>Musyrif 2: ridwan / ridwan123</li>
-            </ul>
-          </div>
+
         </div>
+      </div>
+
+      {/* Copyright Footer */}
+      <div className="mt-8 text-center text-[11.5px] text-slate-400 relative z-10 font-medium tracking-wide">
+        Copyright © 2026 HUMAS SMP AL IRSYAD SURAKARTA
       </div>
     </div>
   );
