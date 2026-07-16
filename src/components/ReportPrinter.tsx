@@ -129,9 +129,12 @@ export default function ReportPrinter({
               >
                 {/* School Header / Kop Surat */}
                 <div className="flex items-center justify-between border-b-[3px] border-slate-800 pb-4 mb-6">
-                  <div className="w-16 h-16 bg-brand-700 rounded-full flex items-center justify-center text-white text-xs font-bold text-center p-1 border-2 border-brand-800">
-                    AL IRSYAD SURAKARTA
-                  </div>
+                  <img
+                    src="https://www.alirsyad.or.id/wp-content/uploads/download/alirsyad-alislamiyyah.png"
+                    alt="Logo Al Irsyad"
+                    className="w-20 h-20 object-contain shrink-0"
+                    referrerPolicy="no-referrer"
+                  />
                   <div className="text-center flex-1 px-4">
                     <h2 className="text-lg font-bold tracking-tight uppercase text-slate-900 leading-tight">
                       YAYASAN AL IRSYAD AL ISLAMIYYAH SURAKARTA
@@ -146,9 +149,7 @@ export default function ReportPrinter({
                       Website: smp.alirsyadsurakarta.sch.id | Email: smpalirsyadsolo@gmail.com
                     </p>
                   </div>
-                  <div className="w-16 h-16 border-2 border-dashed border-slate-300 rounded flex items-center justify-center text-[10px] text-slate-400 font-mono">
-                    LOGO SEKOLAH
-                  </div>
+                  <div className="w-20 h-20 shrink-0 hidden md:block"></div>
                 </div>
 
                 {/* Report Title */}

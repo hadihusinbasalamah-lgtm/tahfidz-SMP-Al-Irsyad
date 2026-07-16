@@ -183,8 +183,13 @@ export default function MusyrifPanel({
       <aside className="w-full md:w-64 bg-brand-800 text-white shrink-0 shadow-lg flex flex-col justify-between md:min-h-screen">
         <div className="p-6">
           <div className="flex items-center gap-3 border-b border-brand-700 pb-5 mb-6">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-brand-800 font-extrabold shadow-inner">
-              UST
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1 shadow-inner shrink-0">
+              <img
+                src="https://www.alirsyad.or.id/wp-content/uploads/download/alirsyad-alislamiyyah.png"
+                alt="Logo Al Irsyad"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <h1 className="font-extrabold text-sm tracking-tight leading-tight uppercase">Tahfidz Al Irsyad</h1>

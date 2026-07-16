@@ -61,9 +61,12 @@ export default function LoginScreen({ onLoginSuccess, musyrifs, adminPass }: Log
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         <div className="flex justify-center">
-          <div className="w-20 h-20 bg-brand-700 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg border-4 border-brand-100 rotate-3 hover:rotate-0 transition-transform duration-300">
-            <BookOpen className="w-10 h-10" />
-          </div>
+          <img
+            src="https://www.alirsyad.or.id/wp-content/uploads/download/alirsyad-alislamiyyah.png"
+            alt="Logo Al Irsyad"
+            className="w-24 h-24 object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
+            referrerPolicy="no-referrer"
+          />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
           Sistem Capaian Tahfidz

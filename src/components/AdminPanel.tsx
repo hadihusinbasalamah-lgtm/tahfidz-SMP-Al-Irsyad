@@ -81,6 +81,7 @@ export default function AdminPanel({
   const [studentForm, setStudentForm] = useState<Partial<Student> | null>(null);
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [classForm, setClassForm] = useState<Partial<Class> | null>(null);
+  const [isEditingClass, setIsEditingClass] = useState(false);
   const [musyrifForm, setMusyrifForm] = useState<Partial<Musyrif> | null>(null);
 
   // Settings form states
@@ -255,8 +256,13 @@ export default function AdminPanel({
       <aside className="w-64 bg-brand-800 text-white shrink-0 shadow-lg hidden md:flex flex-col justify-between">
         <div className="p-6">
           <div className="flex items-center gap-3 border-b border-brand-700 pb-5 mb-6">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-brand-800 font-black shadow-inner">
-              SMP
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden p-1 shadow-inner shrink-0">
+              <img
+                src="https://www.alirsyad.or.id/wp-content/uploads/download/alirsyad-alislamiyyah.png"
+                alt="Logo Al Irsyad"
+                className="w-full h-full object-contain"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <h1 className="font-extrabold text-sm tracking-tight leading-tight">TAFHIDZ AL IRSYAD</h1>
@@ -645,7 +651,10 @@ export default function AdminPanel({
                   <p className="text-sm text-slate-500 mt-1">Daftar kelas aktif di lingkungan SMP Al Irsyad Surakarta.</p>
                 </div>
                 <button
-                  onClick={() => setClassForm({ id: "", nama: "" })}
+                  onClick={() => {
+                    setClassForm({ id: "", nama: "" });
+                    setIsEditingClass(false);
+                  }}
                   className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold rounded-xl shadow-sm transition-all text-sm transform active:scale-95"
                   id="btn-add-kelas"
                 >
@@ -657,7 +666,7 @@ export default function AdminPanel({
               {classForm && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-md p-6 max-w-xl">
                   <h3 className="text-base font-bold text-slate-800 mb-4">
-                    {classForm.id ? "Edit Data Kelas" : "Tambah Kelas Baru"}
+                    {isEditingClass ? "Edit Data Kelas" : "Tambah Kelas Baru"}
                   </h3>
                   <form onSubmit={handleSaveClassSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -666,7 +675,7 @@ export default function AdminPanel({
                         <input
                           type="text"
                           required
-                          disabled={!!classForm.id} // ID is unique key e.g. KELAS7A
+                          disabled={isEditingClass} // ID is unique key e.g. KELAS7A
                           value={classForm.id || ""}
                           onChange={(e) => setClassForm({ ...classForm, id: e.target.value })}
                           className="block w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm disabled:bg-slate-100 uppercase font-mono"
@@ -736,7 +745,10 @@ export default function AdminPanel({
                             <td className="py-3 px-6">
                               <div className="flex justify-center items-center gap-1.5">
                                 <button
-                                  onClick={() => setClassForm(c)}
+                                  onClick={() => {
+                                    setClassForm(c);
+                                    setIsEditingClass(true);
+                                  }}
                                   className="p-1.5 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-brand-50 transition-colors"
                                   title="Edit Kelas"
                                 >
