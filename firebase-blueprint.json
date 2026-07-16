@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "students": {
+      "fields": {
+        "id": "string",
+        "noInduk": "string",
+        "nama": "string",
+        "kelasId": "string",
+        "musyrifId": "string",
+        "musyrifNama": "string"
+      }
+    },
+    "classes": {
+      "fields": {
+        "id": "string",
+        "nama": "string"
+      }
+    },
+    "musyrif": {
+      "fields": {
+        "id": "string",
+        "nik": "string",
+        "nama": "string",
+        "username": "string",
+        "passwordHash": "string",
+        "jumlahSiswa": "number"
+      }
+    },
+    "capaian": {
+      "fields": {
+        "id": "string",
+        "studentId": "string",
+        "noInduk": "string",
+        "namaSiswa": "string",
+        "kelasId": "string",
+        "kelasNama": "string",
+        "musyrifId": "string",
+        "musyrifNama": "string",
+        "juz": "string",
+        "capaianAwal": "string",
+        "capaianAkhir": "string",
+        "totalBaris": "number",
+        "juziyyah": "string",
+        "catatan": "string",
+        "bulan": "string",
+        "updatedAt": "string"
+      }
+    },
+    "settings": {
+      "fields": {
+        "id": "string",
+        "adminPassword": "string"
+      }
+    }
+  }
+}

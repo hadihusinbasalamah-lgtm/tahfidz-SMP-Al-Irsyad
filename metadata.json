@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Capaian Tahfidz SMP Al Irsyad",
+  "description": "Aplikasi pencatatan dan cetak Laporan Capaian Tahfidz siswa SMP Al Irsyad Surakarta dengan multi-user (Admin & Musyrif) dan integrasi Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
