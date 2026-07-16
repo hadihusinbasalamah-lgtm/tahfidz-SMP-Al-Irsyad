@@ -69,6 +69,11 @@ export default function App() {
     await loadAllData(true);
   };
 
+  const handleSaveStudentsBatch = async (studentsList: Student[]) => {
+    await dbService.saveStudentsBatch(studentsList);
+    await loadAllData(true);
+  };
+
   const handleDeleteStudent = async (id: string) => {
     await dbService.deleteStudent(id);
     await loadAllData(true);
@@ -184,6 +189,7 @@ export default function App() {
           capaians={capaians}
           adminPass={adminPass}
           onSaveStudent={handleSaveStudent}
+          onSaveStudentsBatch={handleSaveStudentsBatch}
           onDeleteStudent={handleDeleteStudent}
           onSaveClass={handleSaveClass}
           onDeleteClass={handleDeleteClass}

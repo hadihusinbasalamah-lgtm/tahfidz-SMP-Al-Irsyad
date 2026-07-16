@@ -352,6 +352,39 @@ export const dbService = {
     await this.recalculateMusyrifSiswaCount();
   },
 
+  async saveStudentsBatch(studentsData: Student[]): Promise<void> {
+    if (isFirebaseConfigured && db) {
+      try {
+        await Promise.all(
+          studentsData.map((s) =>
+            setDoc(doc(db, "students", s.id), {
+              noInduk: s.noInduk,
+              nama: s.nama,
+              kelasId: s.kelasId,
+              musyrifId: s.musyrifId,
+              musyrifNama: s.musyrifNama,
+            })
+          )
+        );
+        await this.recalculateMusyrifSiswaCount();
+        return;
+      } catch (err) {
+        console.error("Firestore error in saveStudentsBatch:", err);
+      }
+    }
+    const list = await this.getStudents();
+    for (const studentData of studentsData) {
+      const index = list.findIndex((s) => s.id === studentData.id);
+      if (index >= 0) {
+        list[index] = studentData;
+      } else {
+        list.push(studentData);
+      }
+    }
+    setLocal("tahfidz_students", list);
+    await this.recalculateMusyrifSiswaCount();
+  },
+
   async deleteStudent(id: string): Promise<void> {
     if (isFirebaseConfigured && db) {
       try {

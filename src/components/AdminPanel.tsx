@@ -21,8 +21,10 @@ import {
   Printer,
   ChevronRight,
   Sparkles,
-  Info
+  Info,
+  Upload
 } from "lucide-react";
+import BulkUploadModal from "./BulkUploadModal";
 
 interface AdminPanelProps {
   students: Student[];
@@ -30,6 +32,7 @@ interface AdminPanelProps {
   musyrifs: Musyrif[];
   capaians: Capaian[];
   onSaveStudent: (student: Student) => Promise<void>;
+  onSaveStudentsBatch: (students: Student[]) => Promise<void>;
   onDeleteStudent: (id: string) => Promise<void>;
   onSaveClass: (classData: Class) => Promise<void>;
   onDeleteClass: (id: string) => Promise<void>;
@@ -49,6 +52,7 @@ export default function AdminPanel({
   musyrifs,
   capaians,
   onSaveStudent,
+  onSaveStudentsBatch,
   onDeleteStudent,
   onSaveClass,
   onDeleteClass,
@@ -75,6 +79,7 @@ export default function AdminPanel({
 
   // Form states for modals/editors
   const [studentForm, setStudentForm] = useState<Partial<Student> | null>(null);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [classForm, setClassForm] = useState<Partial<Class> | null>(null);
   const [musyrifForm, setMusyrifForm] = useState<Partial<Musyrif> | null>(null);
 
@@ -400,13 +405,22 @@ export default function AdminPanel({
                   <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Kelola Data Siswa</h2>
                   <p className="text-sm text-slate-500 mt-1">Daftar siswa tahfidz SMP Al Irsyad Surakarta.</p>
                 </div>
-                <button
-                  onClick={() => setStudentForm({ noInduk: "", nama: "", kelasId: "", musyrifId: "" })}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold rounded-xl shadow-sm transition-all text-sm transform active:scale-95"
-                  id="btn-add-siswa"
-                >
-                  <Plus className="w-4 h-4" /> Tambah Siswa
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setIsBulkUploadOpen(true)}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-brand-700 border border-brand-200 font-bold rounded-xl shadow-sm transition-all text-sm transform active:scale-95"
+                    id="btn-bulk-siswa"
+                  >
+                    <Upload className="w-4 h-4" /> Import Masal (CSV)
+                  </button>
+                  <button
+                    onClick={() => setStudentForm({ noInduk: "", nama: "", kelasId: "", musyrifId: "" })}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-bold rounded-xl shadow-sm transition-all text-sm transform active:scale-95"
+                    id="btn-add-siswa"
+                  >
+                    <Plus className="w-4 h-4" /> Tambah Siswa
+                  </button>
+                </div>
               </div>
 
               {/* Student form modal */}
@@ -602,6 +616,23 @@ export default function AdminPanel({
                   <span>Menampilkan {filteredStudentsList.length} dari total {students.length} siswa tahfidz terdaftar.</span>
                 </div>
               </div>
+
+              {/* Bulk Upload Modal */}
+              <BulkUploadModal
+                isOpen={isBulkUploadOpen}
+                onClose={() => setIsBulkUploadOpen(false)}
+                classes={classes}
+                musyrifs={musyrifs}
+                onImport={async (batchStudents) => {
+                  try {
+                    await onSaveStudentsBatch(batchStudents);
+                    showNotification(`Berhasil mengimpor ${batchStudents.length} siswa!`);
+                  } catch (err) {
+                    showNotification("Gagal mengimpor data siswa", "error");
+                    throw err;
+                  }
+                }}
+              />
             </div>
           )}
 
