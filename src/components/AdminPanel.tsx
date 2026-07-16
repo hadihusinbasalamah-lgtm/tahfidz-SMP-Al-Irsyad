@@ -666,13 +666,14 @@ export default function AdminPanel({
                         <input
                           type="text"
                           required
-                          disabled={!!classForm.id} // ID is unique key e.g. 7A
+                          disabled={!!classForm.id} // ID is unique key e.g. KELAS7A
                           value={classForm.id || ""}
                           onChange={(e) => setClassForm({ ...classForm, id: e.target.value })}
-                          className="block w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm disabled:bg-slate-100 uppercase"
-                          placeholder="Contoh: 7A, 8B"
+                          className="block w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm disabled:bg-slate-100 uppercase font-mono"
+                          placeholder="Huruf & angka, bisa > 5 karakter"
                           id="form-kelas-id"
                         />
+                        <p className="text-[10px] text-slate-400 mt-1 font-medium">Bisa kombinasi huruf dan angka, tanpa batasan panjang karakter (contoh: KELAS7A, SMP1B).</p>
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nama Deskriptif</label>
