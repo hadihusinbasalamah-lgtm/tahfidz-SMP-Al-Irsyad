@@ -410,7 +410,12 @@ export const dbService = {
         querySnapshot.forEach((docSnap) => {
           list.push({ id: docSnap.id, ...docSnap.data() } as Capaian);
         });
-        if (list.length === 0) {
+        
+        // Check if already initialized before
+        const initDoc = await getDoc(doc(db, "settings", "capaian_init"));
+        const isInitialized = initDoc.exists() && initDoc.data().initialized === true;
+
+        if (list.length === 0 && !isInitialized) {
           // Initialize
           for (const c of DEFAULT_CAPAIAN) {
             await setDoc(doc(db, "capaian", c.id), {
@@ -432,6 +437,7 @@ export const dbService = {
             });
             list.push(c);
           }
+          await setDoc(doc(db, "settings", "capaian_init"), { initialized: true });
         }
         return list;
       } catch (err) {
@@ -439,6 +445,24 @@ export const dbService = {
       }
     }
     return getLocal("tahfidz_capaians", DEFAULT_CAPAIAN);
+  },
+
+  async clearAllCapaians(): Promise<void> {
+    if (isFirebaseConfigured && db) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "capaian"));
+        const deletePromises: Promise<void>[] = [];
+        querySnapshot.forEach((docSnap) => {
+          deletePromises.push(deleteDoc(doc(db, "capaian", docSnap.id)));
+        });
+        await Promise.all(deletePromises);
+        await setDoc(doc(db, "settings", "capaian_init"), { initialized: true });
+        return;
+      } catch (err) {
+        console.error("Firestore error in clearAllCapaians:", err);
+      }
+    }
+    setLocal("tahfidz_capaians", []);
   },
 
   async saveCapaian(capaianData: Capaian): Promise<void> {

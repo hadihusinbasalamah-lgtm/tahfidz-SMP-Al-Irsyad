@@ -11,9 +11,10 @@ interface LoginScreenProps {
   onLoginSuccess: (role: "admin" | "musyrif", user?: Musyrif) => void;
   musyrifs: Musyrif[];
   adminPass: string;
+  sessionExpired?: boolean;
 }
 
-export default function LoginScreen({ onLoginSuccess, musyrifs, adminPass }: LoginScreenProps) {
+export default function LoginScreen({ onLoginSuccess, musyrifs, adminPass, sessionExpired }: LoginScreenProps) {
   const [role, setRole] = useState<"admin" | "musyrif">("musyrif");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -120,6 +121,13 @@ export default function LoginScreen({ onLoginSuccess, musyrifs, adminPass }: Log
             <div className="mb-4 p-3 bg-rose-50 border border-rose-100 rounded-lg flex items-center gap-2.5 text-rose-800 text-sm animate-shake">
               <AlertCircle className="w-5 h-5 shrink-0 text-rose-500" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {sessionExpired && !error && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2.5 text-amber-800 text-sm animate-pulse">
+              <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
+              <span>Sesi Anda telah berakhir karena tidak ada aktivitas selama 15 menit. Silakan masuk kembali.</span>
             </div>
           )}
 

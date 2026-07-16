@@ -39,6 +39,7 @@ interface AdminPanelProps {
   onSaveMusyrif: (musyrif: Musyrif) => Promise<void>;
   onDeleteMusyrif: (id: string) => Promise<void>;
   onUpdateAdminPassword: (newPass: string) => Promise<void>;
+  onClearAllCapaians: () => Promise<void>;
   onTriggerPrint: (filters: { classId?: string; level?: string; musyrifId?: string; bulan: string }) => void;
   onLogout: () => void;
   adminPass: string;
@@ -59,6 +60,7 @@ export default function AdminPanel({
   onSaveMusyrif,
   onDeleteMusyrif,
   onUpdateAdminPassword,
+  onClearAllCapaians,
   onTriggerPrint,
   onLogout,
   adminPass,
@@ -201,6 +203,17 @@ export default function AdminPanel({
         showNotification("Musyrif berhasil dihapus!");
       } catch (err) {
         showNotification("Gagal menghapus musyrif", "error");
+      }
+    }
+  };
+
+  const handleClearAllCapaiansClick = async () => {
+    if (confirm("Apakah Anda yakin ingin menghapus semua data hasil inputan capaian tahfidz? Tindakan ini bersifat permanen dan tidak dapat dibatalkan!")) {
+      try {
+        await onClearAllCapaians();
+        showNotification("Semua data hasil capaian tahfidz berhasil dihapus!");
+      } catch (err) {
+        showNotification("Gagal menghapus data capaian", "error");
       }
     }
   };
@@ -1025,8 +1038,17 @@ export default function AdminPanel({
 
               {/* Report Tables of Musyrif Input */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Hasil Inputan Capaian Tahfidz</h3>
+                  {capaians.length > 0 && (
+                    <button
+                      onClick={handleClearAllCapaiansClick}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg text-xs transition-colors shadow-sm border border-rose-200 transform active:scale-95"
+                      id="btn-delete-all-capaian"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 animate-pulse" /> Hapus Semua Data Capaian
+                    </button>
+                  )}
                 </div>
 
                 <div className="overflow-x-auto">

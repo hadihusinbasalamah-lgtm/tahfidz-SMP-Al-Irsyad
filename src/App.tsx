@@ -15,8 +15,25 @@ import { Database, WifiOff, RefreshCw, BookOpen } from "lucide-react";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [userRole, setUserRole] = useState<"admin" | "musyrif" | null>(null);
-  const [currentMusyrif, setCurrentMusyrif] = useState<Musyrif | null>(null);
+  const [userRole, setUserRole] = useState<"admin" | "musyrif" | null>(() => {
+    try {
+      const stored = localStorage.getItem("tahfidz_userRole");
+      if (stored === "admin" || stored === "musyrif") return stored;
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+  const [currentMusyrif, setCurrentMusyrif] = useState<Musyrif | null>(() => {
+    try {
+      const stored = localStorage.getItem("tahfidz_currentMusyrif");
+      if (stored) return JSON.parse(stored);
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   // Core collections
   const [students, setStudents] = useState<Student[]>([]);
@@ -59,6 +76,22 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Check if the persisted session has already expired prior to loading
+    try {
+      const lastActivityStr = localStorage.getItem("tahfidz_lastActivity");
+      const storedRole = localStorage.getItem("tahfidz_userRole");
+      if (storedRole && lastActivityStr) {
+        const lastActivity = parseInt(lastActivityStr, 10);
+        const now = Date.now();
+        const IDLE_TIMEOUT = 15 * 60 * 1000;
+        if (now - lastActivity > IDLE_TIMEOUT) {
+          handleLogout();
+          setSessionExpired(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
     loadAllData();
   }, []);
 
@@ -109,6 +142,11 @@ export default function App() {
     await loadAllData(true);
   };
 
+  const handleClearAllCapaians = async () => {
+    await dbService.clearAllCapaians();
+    await loadAllData(true);
+  };
+
   const handleUpdateMusyrifPassword = async (musyrifId: string, newPass: string) => {
     const found = musyrifs.find((m) => m.id === musyrifId);
     if (found) {
@@ -117,6 +155,11 @@ export default function App() {
       await loadAllData(true);
       // Update session musyrif details
       setCurrentMusyrif(updated);
+      try {
+        localStorage.setItem("tahfidz_currentMusyrif", JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -134,7 +177,65 @@ export default function App() {
   const handleLogout = () => {
     setUserRole(null);
     setCurrentMusyrif(null);
+    try {
+      localStorage.removeItem("tahfidz_userRole");
+      localStorage.removeItem("tahfidz_currentMusyrif");
+      localStorage.removeItem("tahfidz_lastActivity");
+    } catch (e) {
+      console.error(e);
+    }
   };
+
+  // Track user activity and check for idle timeout
+  useEffect(() => {
+    if (!userRole) return;
+
+    // Set initial last activity timestamp on login or refresh
+    try {
+      localStorage.setItem("tahfidz_lastActivity", Date.now().toString());
+    } catch (e) {
+      // ignore
+    }
+
+    const handleActivity = () => {
+      try {
+        localStorage.setItem("tahfidz_lastActivity", Date.now().toString());
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
+
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity);
+    });
+
+    const interval = setInterval(() => {
+      try {
+        const lastActivityStr = localStorage.getItem("tahfidz_lastActivity");
+        if (lastActivityStr) {
+          const lastActivity = parseInt(lastActivityStr, 10);
+          const now = Date.now();
+          // 15 minutes of idle time
+          const IDLE_TIMEOUT = 15 * 60 * 1000;
+          if (now - lastActivity > IDLE_TIMEOUT) {
+            handleLogout();
+            setSessionExpired(true);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 5000);
+
+    return () => {
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity);
+      });
+      clearInterval(interval);
+    };
+  }, [userRole]);
 
   if (isLoading) {
     return (
@@ -176,9 +277,22 @@ export default function App() {
         <LoginScreen
           musyrifs={musyrifs}
           adminPass={adminPass}
+          sessionExpired={sessionExpired}
           onLoginSuccess={(role, musyrif) => {
             setUserRole(role);
-            if (musyrif) setCurrentMusyrif(musyrif);
+            setSessionExpired(false);
+            try {
+              localStorage.setItem("tahfidz_userRole", role);
+              if (musyrif) {
+                setCurrentMusyrif(musyrif);
+                localStorage.setItem("tahfidz_currentMusyrif", JSON.stringify(musyrif));
+              } else {
+                setCurrentMusyrif(null);
+                localStorage.removeItem("tahfidz_currentMusyrif");
+              }
+            } catch (e) {
+              console.error(e);
+            }
           }}
         />
       ) : userRole === "admin" ? (
@@ -196,6 +310,7 @@ export default function App() {
           onSaveMusyrif={handleSaveMusyrif}
           onDeleteMusyrif={handleDeleteMusyrif}
           onUpdateAdminPassword={handleUpdateAdminPassword}
+          onClearAllCapaians={handleClearAllCapaians}
           onTriggerPrint={handleTriggerPrint}
           onLogout={handleLogout}
         />
